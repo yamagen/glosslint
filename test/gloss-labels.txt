@@ -1,0 +1,29 @@
+# gloss-labels.txt
+# basic gloss labels for testing
+
+water
+person
+mountain
+cloud
+
+OBJ
+ACC
+GEN
+
+see
+stand
+
+NEG
+
+shallow
+
+REASON
+SUF.REASON
+
+N
+P
+V
+AUX
+ADJ.STEM
+ADJ.ADV
+SUF

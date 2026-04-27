@@ -1,9 +1,16 @@
 # glosslint
 
-`glosslint` is a small UNIX-style validation filter for word-gloss data.
+`glosslint` is a small UNIX-style filter for detecting inconsistency in word-gloss annotation.
 
 It does not parse JSON directly. Instead, JSON is flattened with `jq`, and
 `glosslint` checks the resulting TSV stream.
+
+## Requirements
+
+- Compile with a C compiler (e.g., gcc).
+- Input must be UTF-8 encoded.
+- jq is required for flattening JSON data into TSV format.
+- A label file may be supplied with `-l`.
 
 ## Input format
 
@@ -60,6 +67,8 @@ P
 SUF
 ```
 
+A sample label file `gloss-labels.txt` is included.
+
 ## Run:
 
 ```sh
@@ -81,7 +90,9 @@ make
 
 ## Install
 
+```sh
 sudo make install
+```
 
 ## License
 
@@ -89,4 +100,5 @@ MIT License.
 
 ## Author
 
-Hilofumi Yamamoto, Ph.D. Institute for Science Tokyo
+Hilofumi Yamamoto, Ph.D.  
+Institute of Science Tokyo

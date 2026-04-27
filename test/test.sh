@@ -8,4 +8,4 @@ jq -r '
     (.gloss // ""),
     (.pos // "")
   ] | @tsv
-' test.json | ../src/glosslint
+' test.json | ../src/glosslint -l gloss-labels.txt
