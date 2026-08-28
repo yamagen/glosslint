@@ -4,6 +4,8 @@
 ![Editor Agnostic](https://img.shields.io/badge/editor-agnostic-blue)
 ![Human in the Loop](https://img.shields.io/badge/human-in--the--loop-blue)
 
+![glosslint](docs/images/glosslint-social-preview.jpg)
+
 `glosslint` is a small UNIX-style filter for detecting inconsistency in word-gloss annotation.
 
 It does not parse JSON directly. Instead, JSON is flattened with `jq`, and
