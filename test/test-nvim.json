@@ -5,9 +5,9 @@
     "text": "水をあさみ",
     "word-gloss": [
       { "word": "水", "kana": "みづ", "romaji": "midu", "gloss": "water", "pos": "N" },
-      { "word": "を", "kana": "を", "romaji": "wo", "gloss": "OBJ", "pos": "P" },
+      { "word": "を", "kana": "を", "romaji": "wo", "gloss": "ACC", "pos": "P" },
       { "word": "あさ", "kana": "あさ", "romaji": "asa", "gloss": "shallow", "pos": "ADJ.STEM" },
-      { "word": "み", "kana": "み", "romaji": "mi", "gloss": "REASON", "pos": "SUF" }
+      { "word": "み", "kana": "み", "romaji": "mi", "gloss": "NMNL", "pos": "SUF" }
     ]
   },
   {

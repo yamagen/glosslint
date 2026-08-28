@@ -1,5 +1,8 @@
 #!/bin/sh
 
+CONTROL="$1"
+FILE="$2"
+
 jq --stream -nr '
   foreach inputs as $x
     (
@@ -44,11 +47,11 @@ jq --stream -nr '
         else
           .
         end
-
       else
         .
       end;
 
       .emit // empty
     )
-' test.json
+' "$FILE" |
+glosslint -c "$CONTROL" 2>/dev/null
