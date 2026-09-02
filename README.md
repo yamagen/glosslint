@@ -1,4 +1,4 @@
-# glosslint
+# glosslint / glossemit
 
 ![Unix Pipeline](https://img.shields.io/badge/Unix-pipeline-blue)
 ![Editor Agnostic](https://img.shields.io/badge/editor-agnostic-blue)
@@ -6,157 +6,142 @@
 
 ![glosslint](docs/images/glosslint-social-preview.jpg)
 
-`glosslint` is a small UNIX-style filter for detecting inconsistency in word-gloss annotation.
+`glosslint` and `glossemit` are small UNIX-style tools for working with interlinear gloss annotation.
 
-It does not parse JSON directly. Instead, JSON is flattened with `jq`, and
-`glosslint` checks the resulting TSV stream against a controlled vocabulary.
+- **glosslint** checks annotation consistency.
+- **glossemit** emits publication-ready LaTeX or HTML fragments.
+- **controlled-xx-xx.json** is the shared, machine-readable annotation specification used by both.
 
-## Requirements
+Together they form a small glosssuite workflow in which annotation conventions are not merely documented: they are exercised through validation and publication.
 
-- Compile with a C compiler (e.g., gcc).
-- Input must be UTF-8 encoded.
-- `jq` is required for flattening JSON data into TSV format.
-- A controlled vocabulary JSON file may be supplied with `-c` or `--control-in`.
+## Purpose
 
-## Input format
+The project is designed to make gloss annotation reusable rather than disposable.
 
-`glosslint` expects six tab-separated fields:
+Annotation data, annotation specifications, validation, editor integration, and publication output are kept separate but composable. A project can preserve its own corpus structure, use `jq` to select or transform the needed records, validate them with `glosslint`, and publish them with `glossemit`.
+
+The shared controlled specification can also become a basis for cross-linguistic comparison of the distinctions that different annotation systems actually operationalize.
+
+## Architecture
+
+```mermaid
+flowchart TD
+    E[editor integration] --> A[annotation]
+    A --> C[controlled-xx-xx.json]
+    C --> L[glosslint<br/>validation]
+    C --> M[glossemit<br/>publication]
+    L --> X[cross-linguistic comparison]
+    M --> X
+```
+
+The central file is not merely a vocabulary list. It records annotation fields, controlled grammatical inventories, and emission defaults. Because it participates in actual annotation, validation, and publication, it functions as an **operational annotation specification**.
+
+See [`docs/controlled.md`](docs/controlled.md) for the specification and its role as a shared resource for cross-linguistic comparison.
+
+## Design
+
+The tools follow the UNIX philosophy: small programs, explicit stream interfaces, and composition through pipes.
+
+For validation:
 
 ```text
-file<TAB>line<TAB>id<TAB>word<TAB>gloss<TAB>pos
+corpus JSON
+    ↓ jq
+TSV annotation stream
+    ↓
+glosslint + controlled-xx-xx.json
+    ↓
+source-aware diagnostics
 ```
 
-## Example
+For publication:
 
 ```text
-data.json	7	117	水	water	N
-data.json	8	117	を	OBJ	P
-data.json	9	117	あさ	shallow	ADJ.STEM
-data.json	10	117	み	REASON	SUF
+corpus JSON / SUI output / other JSON
+              ↓ jq
+             JSONL
+              ↓
+          glossemit
+           /     \
+        LaTeX    HTML
 ```
 
-The `file` and `line` fields allow `glosslint` to emit source-aware diagnostics such as:
+`glossemit` is not a mandatory postprocessor of `glosslint`; the two are sibling tools that share the same specification. A corpus is not required to adopt one prescribed JSON organization. It only needs to produce the stream required by the selected tool.
 
-```text
-data.json:8:1: warning: unknown gloss component [id=117 word=を gloss=OBJ pos=P]
-```
+## controlled-xx-xx.json
 
-## Usage
-
-For JSON data, use the included `glosslint-json` wrapper, which extracts
-`word-gloss` records with `jq --stream` and preserves source line numbers:
-
-```sh
-glosslint-json controlled-ja-en.json data.json
-```
-
-The underlying pipeline is:
-
-```text
-JSON
-  ↓
-jq --stream
-  ↓
-glosslint
-  ↓
-file:line:column diagnostics
-```
-
-`glosslint` can also read an already flattened TSV stream directly:
-
-```sh
-glosslint -c controlled-ja-en.json < word-gloss.tsv
-```
-
-## Checks
-
-The current version checks:
-
-1. malformed TSV lines
-2. empty id
-3. empty word
-4. empty gloss
-5. empty pos
-6. unknown POS labels
-7. unknown gloss components
-8. controlled conjugation labels used in gloss components
-9. notation problems such as lowercase lexical glosses joined with `.`
-10. unstable gloss usage for the same word
-
-By default, unknown labels are warnings. To treat them as errors, use:
-
-```sh
-glosslint -c controlled-ja-en.json --unknown-error < word-gloss.tsv
-```
-
-## Controlled vocabulary
-
-A controlled vocabulary is supplied as JSON. It separates at least three namespaces:
+A controlled file can contain:
 
 ```json
 {
-  "conjugation": {
-    "ADV": "adverbial",
-    "FIN": "finite"
-  },
-  "pos": {
-    "N": "noun",
-    "V": "verb"
-  },
-  "gloss": {
-    "PST": "past",
-    "NEG": "negative"
+  "schema": { ... },
+  "conjugation": { ... },
+  "pos": { ... },
+  "gloss": { ... },
+  "emit": {
+    "latex": { ... },
+    "html": { ... }
   }
 }
 ```
 
-Lowercase lexical glosses such as `water`, `shallow`, or `stand-up` are open-ended.
-Non-lowercase gloss components are checked against the controlled `gloss` and
-`conjugation` namespaces, while POS values are checked against `pos`.
+A working Japanese-English example is provided at:
 
-The control file is therefore both a validation resource and an explicit,
-machine-readable statement of the analytical conventions used by a project.
+```text
+config/controlled-ja-en.json
+```
 
-`glosslint` detects inconsistency; interpretation remains a human decision.
+The file is shared by validation and emission. It can also serve as a comparable record of which grammatical and annotation distinctions are made explicit in a language-specific workflow.
+
+For the complete format, see [`docs/controlled.md`](docs/controlled.md).
 
 ## Build
+
+Requirements:
+
+- a C compiler such as `gcc`
+- `make`
+- `jq`
+- Jansson (for `glossemit`)
+- UTF-8 input
+
+Build both programs with:
 
 ```sh
 cd src
 make
 ```
 
-## Install
+Install with:
 
 ```sh
 sudo make install
 ```
 
-After installation:
+## Documentation
 
-```sh
-which glosslint
-glosslint -v
-```
+- [`docs/glosslint.md`](docs/glosslint.md) — validation and diagnostics
+- [`docs/glossemit.md`](docs/glossemit.md) — LaTeX / HTML publication
+- [`docs/controlled.md`](docs/controlled.md) — shared annotation specification and cross-linguistic comparison
+- [`docs/editors/`](docs/editors/) — editor integration
 
-## Editor integration
+Examples are available under [`examples/`](examples/).
 
-`glosslint` emits diagnostics in a standard source-location form that can be
-consumed by editor diagnostic interfaces.
+## Principle
 
-- [Neovim](docs/editors/neovim.md)
-- [Visual Studio Code](docs/editors/vscode.md)
-- [Emacs](docs/editors/emacs.md)
-
-A typical interactive workflow is:
+The project keeps several responsibilities deliberately separate:
 
 ```text
-save
-→ check
-→ jump
-→ correct
-→ save again
+store richly
+    ↓
+select dynamically
+    ↓
+validate explicitly
+    ↓
+publish flexibly
 ```
+
+The software can report whether annotation conforms to the declared specification. Linguistic interpretation remains a human decision.
 
 ## License
 
