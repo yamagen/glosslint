@@ -335,6 +335,118 @@ static size_t count_json_object_fields(const char *json) {
   return count;
 }
 
+static int schema_has_field(const SchemaVec *schema, const char *name) {
+  size_t i;
+
+  for (i = 0; i < schema->len; i++) {
+    if (strcmp(schema->items[i].name, name) == 0) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+static void collect_json_object_keys(const char *json, StringVec *keys) {
+  const char *p = json;
+  int object_depth = 0;
+  int array_depth = 0;
+  int in_string = 0;
+  int escaped = 0;
+  int expect_key = 0;
+  const char *key_start = NULL;
+
+  if (!json) {
+    return;
+  }
+
+  for (; *p; p++) {
+    unsigned char c = (unsigned char)*p;
+
+    if (in_string) {
+      if (escaped) {
+        escaped = 0;
+      } else if (c == '\\') {
+        escaped = 1;
+      } else if (c == '"') {
+        in_string = 0;
+        if (key_start) {
+          size_t len = (size_t)(p - key_start);
+          char *key = xmalloc(len + 1);
+          memcpy(key, key_start, len);
+          key[len] = '\0';
+          string_vec_push_owned(keys, key);
+          key_start = NULL;
+          expect_key = 0;
+        }
+      }
+      continue;
+    }
+
+    if (c == '"') {
+      in_string = 1;
+      if (object_depth == 1 && array_depth == 0 && expect_key) {
+        key_start = p + 1;
+      }
+    } else if (c == '{') {
+      object_depth++;
+      if (object_depth == 1) {
+        expect_key = 1;
+      }
+    } else if (c == '}') {
+      if (object_depth > 0) {
+        object_depth--;
+      }
+    } else if (c == '[') {
+      array_depth++;
+    } else if (c == ']') {
+      if (array_depth > 0) {
+        array_depth--;
+      }
+    } else if (c == ',' && object_depth == 1 && array_depth == 0) {
+      expect_key = 1;
+    }
+  }
+}
+
+static void check_schema_fields(const char *file, size_t source_line,
+                                const char *id, const char *word,
+                                const char *gloss, const char *pos,
+                                const char *record_json,
+                                const SchemaVec *schema) {
+  StringVec keys;
+  size_t i;
+  char msg[512];
+
+  if (!record_json || schema->len == 0) {
+    return;
+  }
+
+  string_vec_init(&keys);
+  collect_json_object_keys(record_json, &keys);
+
+  if (count_json_object_fields(record_json) != schema->len) {
+    report_msg(MSG_ERROR, file, source_line, id, word, gloss, pos,
+               "schema field count mismatch");
+  }
+
+  for (i = 0; i < schema->len; i++) {
+    if (!string_vec_contains(&keys, schema->items[i].name)) {
+      snprintf(msg, sizeof(msg), "missing field: %s", schema->items[i].name);
+      report_msg(MSG_ERROR, file, source_line, id, word, gloss, pos, msg);
+    }
+  }
+
+  for (i = 0; i < keys.len; i++) {
+    if (!schema_has_field(schema, keys.items[i])) {
+      snprintf(msg, sizeof(msg), "unknown field: %s", keys.items[i]);
+      report_msg(MSG_ERROR, file, source_line, id, word, gloss, pos, msg);
+    }
+  }
+
+  string_vec_free(&keys);
+}
+
 static int schema_rule_from_string(const char *s, SchemaRule *rule) {
   if (strcmp(s, "off") == 0) {
     *rule = SCHEMA_OFF;
@@ -536,11 +648,8 @@ static void read_records(FILE *fp, RecordVec *records,
 
     source_line = (size_t)strtoul(source_line_s, NULL, 10);
 
-    if (record_json && control->schema.len > 0 &&
-        count_json_object_fields(record_json) != control->schema.len) {
-      report_msg(MSG_ERROR, file, source_line, id, word, gloss, pos,
-                 "schema field count mismatch");
-    }
+    check_schema_fields(file, source_line, id, word, gloss, pos, record_json,
+                        &control->schema);
 
     if (*id == '\0') {
       report_msg(MSG_ERROR, file, source_line, id, word, gloss, pos,
