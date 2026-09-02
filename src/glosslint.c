@@ -296,6 +296,45 @@ static int split_tsv6_or_7(char *line, char **f0, char **f1, char **f2,
   return 1;
 }
 
+static size_t count_json_object_fields(const char *json) {
+  const unsigned char *p = (const unsigned char *)json;
+  size_t count = 0;
+  int depth = 0;
+  int in_string = 0;
+  int escaped = 0;
+
+  if (!json) {
+    return 0;
+  }
+
+  for (; *p; p++) {
+    if (in_string) {
+      if (escaped) {
+        escaped = 0;
+      } else if (*p == '\\') {
+        escaped = 1;
+      } else if (*p == '"') {
+        in_string = 0;
+      }
+      continue;
+    }
+
+    if (*p == '"') {
+      in_string = 1;
+    } else if (*p == '{') {
+      depth++;
+    } else if (*p == '}') {
+      if (depth > 0) {
+        depth--;
+      }
+    } else if (*p == ':' && depth == 1) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
 static int schema_rule_from_string(const char *s, SchemaRule *rule) {
   if (strcmp(s, "off") == 0) {
     *rule = SCHEMA_OFF;
@@ -495,9 +534,13 @@ static void read_records(FILE *fp, RecordVec *records,
       continue;
     }
 
-    (void)record_json;
-
     source_line = (size_t)strtoul(source_line_s, NULL, 10);
+
+    if (record_json && control->schema.len > 0 &&
+        count_json_object_fields(record_json) != control->schema.len) {
+      report_msg(MSG_ERROR, file, source_line, id, word, gloss, pos,
+                 "schema field count mismatch");
+    }
 
     if (*id == '\0') {
       report_msg(MSG_ERROR, file, source_line, id, word, gloss, pos,
