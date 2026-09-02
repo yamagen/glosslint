@@ -3,22 +3,27 @@ CFLAGS  = -Wall -Wextra -std=c11 -O2
 PREFIX  = /usr/local
 BINDIR  = $(PREFIX)/bin
 
-TARGET  = glosslint
-OBJS    = glosslint.o
+TARGETS = glosslint glossemit
 
-all: $(TARGET)
+all: $(TARGETS)
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+glosslint: glosslint.o
+	$(CC) $(CFLAGS) -o $@ $^
+
+glossemit: glossemit.o
+	$(CC) $(CFLAGS) -o $@ $^ -ljansson
 
 glosslint.o: glosslint.c glosslint.h
 	$(CC) $(CFLAGS) -c glosslint.c
 
-install: $(TARGET)
+glossemit.o: glossemit.c
+	$(CC) $(CFLAGS) -c glossemit.c
+
+install: $(TARGETS)
 	mkdir -p $(BINDIR)
-	cp $(TARGET) $(BINDIR)/$(TARGET)
+	cp $(TARGETS) $(BINDIR)/
 
 clean:
-	rm -f $(TARGET) $(OBJS)
+	rm -f $(TARGETS) *.o
 
 .PHONY: all install clean
