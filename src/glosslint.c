@@ -262,10 +262,10 @@ void control_set_free(ControlSet *c) {
   schema_vec_free(&c->schema);
 }
 
-static int split_tsv6(char *line, char **f0, char **f1, char **f2, char **f3,
-                      char **f4, char **f5) {
+static int split_tsv6_or_7(char *line, char **f0, char **f1, char **f2,
+                           char **f3, char **f4, char **f5, char **f6) {
   char *p;
-  char *fields[6];
+  char *fields[7];
   int count = 0;
 
   fields[count++] = line;
@@ -273,7 +273,7 @@ static int split_tsv6(char *line, char **f0, char **f1, char **f2, char **f3,
   for (p = line; *p; p++) {
     if (*p == '\t') {
       *p = '\0';
-      if (count < 6) {
+      if (count < 7) {
         fields[count++] = p + 1;
       } else {
         return -1;
@@ -281,7 +281,7 @@ static int split_tsv6(char *line, char **f0, char **f1, char **f2, char **f3,
     }
   }
 
-  if (count != 6) {
+  if (count != 6 && count != 7) {
     return 0;
   }
 
@@ -291,6 +291,7 @@ static int split_tsv6(char *line, char **f0, char **f1, char **f2, char **f3,
   *f3 = fields[3];
   *f4 = fields[4];
   *f5 = fields[5];
+  *f6 = (count == 7) ? fields[6] : NULL;
 
   return 1;
 }
@@ -470,6 +471,7 @@ static void read_records(FILE *fp, RecordVec *records,
     char *word;
     char *gloss;
     char *pos;
+    char *record_json;
     size_t source_line;
     int split_result;
     Record r;
@@ -482,16 +484,18 @@ static void read_records(FILE *fp, RecordVec *records,
       continue;
     }
 
-    split_result =
-        split_tsv6(line, &file, &source_line_s, &id, &word, &gloss, &pos);
+    split_result = split_tsv6_or_7(line, &file, &source_line_s, &id, &word,
+                                   &gloss, &pos, &record_json);
 
     if (split_result != 1) {
       fprintf(stderr,
-              "fatal: input line %zu: malformed TSV line: expected 6 fields\n",
+              "fatal: input line %zu: malformed TSV line: expected 6 or 7 fields\n",
               line_no);
       errors++;
       continue;
     }
+
+    (void)record_json;
 
     source_line = (size_t)strtoul(source_line_s, NULL, 10);
 
@@ -591,7 +595,7 @@ static void usage(FILE *out) {
           "glosslint %s\n"
           "usage: glosslint [options] < word-gloss.tsv\n\n"
           "Input format:\n"
-          "  file<TAB>line<TAB>id<TAB>word<TAB>gloss<TAB>pos\n\n"
+          "  file<TAB>line<TAB>id<TAB>word<TAB>gloss<TAB>pos[<TAB>record-json]\n\n"
           "Options:\n"
           "  -c, --control-in FILE  controlled vocabulary JSON\n"
           "      --unknown-error    treat unknown labels as errors\n"
