@@ -35,6 +35,10 @@ annotation data
 
 The two programs therefore share a specification, but neither depends on the other.
 
+A controlled file is not merely a descriptive inventory. It is an **operational specification** used in actual annotation, validation, and emission within the glosssuite workflow. The distinctions recorded in the file can therefore be tested by practice: annotations are checked against them, inconsistencies are reported, humans revise the data where appropriate, and the same specification is then reused when the annotation is prepared for publication.
+
+This makes a controlled file different from an unchecked list of categories written only for documentation. It is a description that participates in the working annotation system.
+
 ## schema
 
 The `schema` object declares the fields expected in each annotation record and how those fields are checked.
@@ -140,6 +144,8 @@ can make it possible to compare, among other things, which distinctions are repr
 
 This comparison should not require every language to be forced into one universal inventory in advance. Each controlled file can first describe the distinctions that are actually useful for its own annotation practice. Cross-linguistic comparison can then proceed by placing those specifications alongside one another and observing both correspondences and differences.
 
+Because the files are operational specifications rather than unchecked descriptive lists, such comparison is grounded in annotation systems that have actually been exercised through validation and publication. The comparison is therefore based on distinctions that researchers have had to make explicit enough for software to inspect and use.
+
 In this sense, a collection of `controlled-xx-xx.json` files can become a shared scholarly resource: not a manually reconstructed feature matrix, but a set of feature inventories grounded in actual annotation, validation, and publication practice.
 
 ## Naming
@@ -153,3 +159,5 @@ controlled-ja-en.json
 can be used for Japanese annotation with English glossing conventions.
 
 The filename is intentionally independent of any particular corpus. The same annotation specification may therefore be shared by multiple works, pipelines, and tools.
+
+A working example is provided in [`config/controlled-ja-en.json`](../config/controlled-ja-en.json).
