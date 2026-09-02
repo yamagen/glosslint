@@ -74,16 +74,12 @@
     "latex": {
       "begin": ["\\ex", "\\begingl"],
       "lines": [
-        {"tag": "word", "command": "\\gla"},
-        {"tag": "kana", "command": "\\glb"},
-        {"tag": "gloss", "command": "\\glc", "split": "."}
+        { "tag": "word", "command": "\\gla" },
+        { "tag": "romaji", "command": "\\glb" },
+        { "tag": "gloss", "command": "\\glc", "split": "." }
       ],
       "translation": {
-        "tags": [
-          "translation-en-natural",
-          "translation-en",
-          "translation-en-literal"
-        ],
+        "tags": ["translation-en-natural", "translation-en", "translation-en-literal"],
         "command": "\\glft"
       },
       "end": ["\\endgl", "\\xe"]
