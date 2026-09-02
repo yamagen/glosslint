@@ -105,15 +105,12 @@ static void check_gloss_components(const char *file, size_t source_line,
 
   for (part = strtok_r(copy, ".", &saveptr); part != NULL;
        part = strtok_r(NULL, ".", &saveptr)) {
-
     if (is_lowercase_lexical(part)) {
       lexical_count++;
-
       if (lexical_count > 1) {
         report_msg(MSG_WARN, file, source_line, id, word, gloss, pos,
                    "lexical glosses must not be joined with '.'");
       }
-
       continue;
     }
 
@@ -147,36 +144,6 @@ static void rstrip(char *s) {
     }
   }
 }
-
-void control_set_init(ControlSet *c) {
-  string_vec_init(&c->conjugation);
-  string_vec_init(&c->pos);
-  string_vec_init(&c->gloss);
-}
-
-void control_set_free(ControlSet *c) {
-  string_vec_free(&c->conjugation);
-  string_vec_free(&c->pos);
-  string_vec_free(&c->gloss);
-}
-
-/*
-static char *trim_in_place(char *s) {
-  char *end;
-
-  while (*s && isspace((unsigned char)*s)) {
-    s++;
-  }
-
-  end = s + strlen(s);
-  while (end > s && isspace((unsigned char)*(end - 1))) {
-    *(end - 1) = '\0';
-    end--;
-  }
-
-  return s;
-}
-*/
 
 void record_vec_init(RecordVec *v) {
   v->items = NULL;
@@ -250,6 +217,51 @@ void string_vec_free(StringVec *v) {
   v->cap = 0;
 }
 
+void schema_vec_init(SchemaVec *v) {
+  v->items = NULL;
+  v->len = 0;
+  v->cap = 0;
+}
+
+void schema_vec_push_owned(SchemaVec *v, char *name, SchemaRule rule) {
+  if (v->len == v->cap) {
+    size_t new_cap = v->cap ? v->cap * 2 : 16;
+    v->items = xrealloc(v->items, new_cap * sizeof(v->items[0]));
+    v->cap = new_cap;
+  }
+
+  v->items[v->len].name = name;
+  v->items[v->len].rule = rule;
+  v->len++;
+}
+
+void schema_vec_free(SchemaVec *v) {
+  size_t i;
+
+  for (i = 0; i < v->len; i++) {
+    free(v->items[i].name);
+  }
+
+  free(v->items);
+  v->items = NULL;
+  v->len = 0;
+  v->cap = 0;
+}
+
+void control_set_init(ControlSet *c) {
+  string_vec_init(&c->conjugation);
+  string_vec_init(&c->pos);
+  string_vec_init(&c->gloss);
+  schema_vec_init(&c->schema);
+}
+
+void control_set_free(ControlSet *c) {
+  string_vec_free(&c->conjugation);
+  string_vec_free(&c->pos);
+  string_vec_free(&c->gloss);
+  schema_vec_free(&c->schema);
+}
+
 static int split_tsv6(char *line, char **f0, char **f1, char **f2, char **f3,
                       char **f4, char **f5) {
   char *p;
@@ -280,6 +292,57 @@ static int split_tsv6(char *line, char **f0, char **f1, char **f2, char **f3,
   *f4 = fields[4];
   *f5 = fields[5];
 
+  return 1;
+}
+
+static int schema_rule_from_string(const char *s, SchemaRule *rule) {
+  if (strcmp(s, "off") == 0) {
+    *rule = SCHEMA_OFF;
+  } else if (strcmp(s, "controlled") == 0) {
+    *rule = SCHEMA_CONTROLLED;
+  } else if (strcmp(s, "string") == 0) {
+    *rule = SCHEMA_STRING;
+  } else if (strcmp(s, "integer") == 0) {
+    *rule = SCHEMA_INTEGER;
+  } else if (strcmp(s, "numeric") == 0) {
+    *rule = SCHEMA_NUMERIC;
+  } else {
+    return 0;
+  }
+
+  return 1;
+}
+
+static int parse_json_string_pair(char *line, char **key, char **value) {
+  char *p;
+  char *q;
+  char *r;
+  char *s;
+
+  p = strchr(line, '"');
+  if (!p) {
+    return 0;
+  }
+
+  q = strchr(p + 1, '"');
+  if (!q) {
+    return 0;
+  }
+
+  r = strchr(q + 1, '"');
+  if (!r) {
+    return 0;
+  }
+
+  s = strchr(r + 1, '"');
+  if (!s) {
+    return 0;
+  }
+
+  *q = '\0';
+  *s = '\0';
+  *key = p + 1;
+  *value = r + 1;
   return 1;
 }
 
@@ -315,6 +378,32 @@ static int load_control_file(const char *path, ControlSet *control) {
 
     if (strstr(line, "\"gloss\"")) {
       section = SEC_GLOSS;
+      continue;
+    }
+
+    if (strstr(line, "\"schema\"")) {
+      section = SEC_SCHEMA;
+      continue;
+    }
+
+    if (section == SEC_SCHEMA) {
+      char *key;
+      char *value;
+      SchemaRule rule;
+
+      if (!parse_json_string_pair(line, &key, &value)) {
+        continue;
+      }
+
+      if (!schema_rule_from_string(value, &rule)) {
+        fprintf(stderr, "fatal: unknown schema rule '%s' for field '%s'\n",
+                value, key);
+        free(line);
+        fclose(fp);
+        return -1;
+      }
+
+      schema_vec_push_owned(&control->schema, xstrdup(key), rule);
       continue;
     }
 
@@ -484,13 +573,8 @@ static void check_variation(const RecordVec *records) {
 
     if (!gloss_seen_for_word(records, r->word, r->gloss, i) &&
         word_has_different_gloss_before(records, r->word, r->gloss, i)) {
-
-      char msg[512];
-
-      snprintf(msg, sizeof(msg), "unstable gloss usage");
-
       report_msg(MSG_WARN, r->file, r->source_line, r->id, r->word, r->gloss,
-                 r->pos, msg);
+                 r->pos, "unstable gloss usage");
     }
   }
 }
@@ -511,14 +595,12 @@ static void usage(FILE *out) {
 }
 
 static void parse_options(int argc, char **argv, Options *opt) {
-
   static struct option long_opts[] = {{"control-in", required_argument, 0, 'c'},
                                       {"unknown-error", no_argument, 0, 1},
                                       {"quiet", no_argument, 0, 'q'},
                                       {"help", no_argument, 0, 'h'},
                                       {"version", no_argument, 0, 'v'},
                                       {0, 0, 0, 0}};
-
   int c;
 
   opt->quiet = 0;
@@ -566,8 +648,10 @@ int main(int argc, char **argv) {
       return 2;
     }
 
-    fprintf(stderr, "control: conjugation=%zu pos=%zu gloss=%zu\n",
-            control.conjugation.len, control.pos.len, control.gloss.len);
+    fprintf(stderr,
+            "control: conjugation=%zu pos=%zu gloss=%zu schema=%zu\n",
+            control.conjugation.len, control.pos.len, control.gloss.len,
+            control.schema.len);
   }
 
   read_records(stdin, &records, &control, &opt);
