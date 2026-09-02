@@ -1,0 +1,9 @@
+[0] Config.pm:329> INFO - This is Biber 2.22
+[0] Config.pm:332> INFO - Logfile is 'glosstest.blg'
+[31] biber:342> INFO - === 木  9月  3, 2026, 06:52:44
+[39] Biber.pm:421> INFO - Reading 'glosstest.bcf'
+[69] Biber.pm:1002> INFO - Found 0 citekeys in bib section 0
+[76] bbl.pm:676> INFO - Writing 'glosstest.bbl' with encoding 'UTF-8'
+[76] bbl.pm:779> INFO - Output to glosstest.bbl
+[76] Biber.pm:132> WARN - The file 'glosstest.bcf' does not contain any citations!
+[76] Biber.pm:134> INFO - WARNINGS: 1

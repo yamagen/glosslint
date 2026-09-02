@@ -1,0 +1,36 @@
+% github/glosslint/examples/latex/glosstest.tex
+
+\documentclass[a4paper]{article}
+\usepackage[a4paper,margin=25mm]{geometry}
+\usepackage{xeCJK}
+\usepackage{fontspec}
+\setCJKsansfont[BoldFont=HaranoAjiGothic-Bold.otf]{HaranoAjiGothic-Regular.otf}
+\setCJKmonofont[BoldFont=HaranoAjiGothic-Bold.otf]{HaranoAjiGothic-Regular.otf}
+\setCJKmainfont[ BoldFont=HaranoAjiMincho-Bold.otf, ItalicFont=HaranoAjiMincho-Regular.otf, BoldItalicFont=HaranoAjiMincho-Bold.otf]{HaranoAjiMincho-Regular.otf}
+
+\usepackage{expex}
+\lingset{
+  everygla=\normalsize,
+  everyglb=\footnotesize,
+  everyglft=\normalsize
+}
+
+\usepackage{csquotes}
+%\MakeOuterQuote{"}
+
+\title{\bfseries glossemit test}
+\author{glosslint project}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Glossemit test}
+
+This is a test document for the glossemit package. 
+
+\input{emit-out.tex}
+
+\end{document}
+
+
