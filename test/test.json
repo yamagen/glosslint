@@ -4,10 +4,10 @@
     "source": "test-001",
     "text": "水をあさみ",
     "word-gloss": [
-      { "word": "水", "kana": "みづ", "romaji": "midu", "gloss": "water", "pos": "N" },
-      { "word": "を", "kana": "を", "romaji": "wo", "gloss": "OBJ", "pos": "P" },
-      { "word": "あさ", "kana": "あさ", "romaji": "asa", "gloss": "shallow", "pos": "ADJ.STEM" },
-      { "word": "み", "kana": "み", "romaji": "mi", "gloss": "REASON", "pos": "SUF" }
+      { "word": "水", "lemma": "水", "kana": "みづ", "lemma-kana": "みづ", "romaji": "midu", "lemma-romaji": "midu", "gloss": "water", "pos": "N", "ku": 0 },
+      { "word": "を", "lemma": "を", "kana": "を", "lemma-kana": "を", "romaji": "wo", "lemma-romaji": "wo", "gloss": "OBJ", "pos": "P", "ku": 0 },
+      { "word": "あさ", "lemma": "あさ", "kana": "あさ", "lemma-kana": "あさ", "romaji": "asa", "lemma-romaji": "asa", "gloss": "shallow", "pos": "ADJ.STEM", "ku": 0 },
+      { "word": "み", "lemma": "み", "kana": "み", "lemma-kana": "み", "romaji": "mi", "lemma-romaji": "mi", "gloss": "REASON", "pos": "SUF", "ku": 0 }
     ]
   },
   {
@@ -15,10 +15,10 @@
     "source": "test-002",
     "text": "水のあさみ",
     "word-gloss": [
-      { "word": "水", "kana": "みづ", "romaji": "midu", "gloss": "water", "pos": "N" },
-      { "word": "の", "kana": "の", "romaji": "no", "gloss": "GEN", "pos": "P" },
-      { "word": "あさ", "kana": "あさ", "romaji": "asa", "gloss": "shallow", "pos": "ADJ.STEM" },
-      { "word": "み", "kana": "み", "romaji": "mi", "gloss": "SUF.REASON", "pos": "SUF" }
+      { "word": "水", "lemma": "水", "kana": "みづ", "lemma-kana": "みづ", "romaji": "midu", "lemma-romaji": "midu", "gloss": "water", "pos": "N", "ku": 0 },
+      { "word": "の", "lemma": "の", "kana": "の", "lemma-kana": "の", "romaji": "no", "lemma-romaji": "no", "gloss": "GEN", "pos": "P", "ku": 0 },
+      { "word": "あさ", "lemma": "あさ", "kana": "あさ", "lemma-kana": "あさ", "romaji": "asa", "lemma-romaji": "asa", "gloss": "shallow", "pos": "ADJ.STEM", "ku": 0 },
+      { "word": "み", "lemma": "み", "kana": "み", "lemma-kana": "み", "romaji": "mi", "lemma-romaji": "mi", "gloss": "SUF.REASON", "pos": "SUF", "ku": 0 }
     ]
   },
   {
@@ -26,10 +26,10 @@
     "source": "test-003",
     "text": "人を見ず",
     "word-gloss": [
-      { "word": "人", "kana": "ひと", "romaji": "hito", "gloss": "person", "pos": "N" },
-      { "word": "を", "kana": "を", "romaji": "wo", "gloss": "ACC", "pos": "P" },
-      { "word": "見", "kana": "み", "romaji": "mi", "gloss": "see", "pos": "V" },
-      { "word": "ず", "kana": "ず", "romaji": "zu", "gloss": "NEG", "pos": "AUX" }
+      { "word": "人", "lemma": "人", "kana": "ひと", "lemma-kana": "ひと", "romaji": "hito", "lemma-romaji": "hito", "gloss": "person", "pos": "N", "ku": 0 },
+      { "word": "を", "lemma": "を", "kana": "を", "lemma-kana": "を", "romaji": "wo", "lemma-romaji": "wo", "gloss": "ACC", "pos": "P", "ku": 0 },
+      { "word": "見", "lemma": "見", "kana": "み", "lemma-kana": "み", "romaji": "mi", "lemma-romaji": "mi", "gloss": "see", "pos": "V", "ku": 0 },
+      { "word": "ず", "lemma": "ず", "kana": "ず", "lemma-kana": "ず", "romaji": "zu", "lemma-romaji": "zu", "gloss": "NEG", "pos": "AUX", "ku": 0 }
     ]
   },
   {
@@ -37,23 +37,23 @@
     "source": "test-004",
     "text": "山高く",
     "word-gloss": [
-      { "word": "山", "kana": "やま", "romaji": "yama", "gloss": "mountain", "pos": "N" },
-      { "word": "高く", "kana": "たかく", "romaji": "takaku", "gloss": "high", "pos": "ADJ.ADV" }
+      { "word": "山", "lemma": "山", "kana": "やま", "lemma-kana": "やま", "romaji": "yama", "lemma-romaji": "yama", "gloss": "mountain", "pos": "N", "ku": 0 },
+      { "word": "高く", "lemma": "高く", "kana": "たかく", "lemma-kana": "たかく", "romaji": "takaku", "lemma-romaji": "takaku", "gloss": "high", "pos": "ADJ.ADV", "ku": 0 }
     ]
   },
   {
     "id": 121,
     "source": "test-005",
     "text": "風",
-    "word-gloss": [{ "word": "風", "kana": "かぜ", "romaji": "kaze", "gloss": "", "pos": "N" }]
+    "word-gloss": [{ "word": "風", "lemma": "風", "kana": "かぜ", "lemma-kana": "かぜ", "romaji": "kaze", "lemma-romaji": "kaze", "gloss": "", "pos": "N", "ku": 0 }]
   },
   {
     "id": 122,
     "source": "test-006",
     "text": "雲立つ",
     "word-gloss": [
-      { "word": "雲", "kana": "くも", "romaji": "kumo", "gloss": "cloud", "pos": "N" },
-      { "word": "立つ", "kana": "たつ", "romaji": "tatsu", "gloss": "stand.up.ADV", "pos": "V" }
+      { "word": "雲", "lemma": "雲", "kana": "くも", "lemma-kana": "くも", "romaji": "kumo", "lemma-romaji": "kumo", "gloss": "cloud", "pos": "N", "ku": 0 },
+      { "word": "立つ", "lemma": "立つ", "kana": "たつ", "lemma-kana": "たつ", "romaji": "tatsu", "lemma-romaji": "tatsu", "gloss": "stand.up.ADV", "pos": "V", "ku": 0 }
     ]
   }
 ]
