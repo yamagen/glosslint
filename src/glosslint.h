@@ -29,10 +29,30 @@ typedef struct {
   size_t cap;
 } StringVec;
 
+typedef enum {
+  SCHEMA_OFF = 0,
+  SCHEMA_CONTROLLED,
+  SCHEMA_STRING,
+  SCHEMA_INTEGER,
+  SCHEMA_NUMERIC
+} SchemaRule;
+
+typedef struct {
+  char *name;
+  SchemaRule rule;
+} SchemaField;
+
+typedef struct {
+  SchemaField *items;
+  size_t len;
+  size_t cap;
+} SchemaVec;
+
 typedef struct {
   StringVec conjugation;
   StringVec pos;
   StringVec gloss;
+  SchemaVec schema;
 } ControlSet;
 
 typedef struct {
@@ -50,6 +70,10 @@ void string_vec_push_owned(StringVec *v, char *s);
 int string_vec_contains(const StringVec *v, const char *s);
 void string_vec_free(StringVec *v);
 
+void schema_vec_init(SchemaVec *v);
+void schema_vec_push_owned(SchemaVec *v, char *name, SchemaRule rule);
+void schema_vec_free(SchemaVec *v);
+
 void control_set_init(ControlSet *c);
 void control_set_free(ControlSet *c);
 
@@ -57,7 +81,8 @@ typedef enum {
   SEC_NONE = 0,
   SEC_CONJUGATION,
   SEC_POS,
-  SEC_GLOSS
+  SEC_GLOSS,
+  SEC_SCHEMA
 } ControlSection;
 
 #endif
