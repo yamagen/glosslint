@@ -83,6 +83,21 @@
         "command": "\\glft"
       },
       "end": ["\\endgl", "\\xe"]
+    },
+    "html": {
+      "container": { "element": "div", "class": "gloss" },
+      "tokens": { "element": "div", "class": "gloss-tokens" },
+      "token": { "element": "div", "class": "gloss-token" },
+      "lines": [
+        { "tag": "word", "element": "div", "class": "gla" },
+        { "tag": "romaji", "element": "div", "class": "glb" },
+        { "tag": "gloss", "element": "div", "class": "glc", "split": "." }
+      ],
+      "translation": {
+        "tags": ["translation-en-natural", "translation-en", "translation-en-literal"],
+        "element": "div",
+        "class": "glft"
+      }
     }
   }
 }
