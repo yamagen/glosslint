@@ -409,6 +409,114 @@ static void collect_json_object_keys(const char *json, StringVec *keys) {
   }
 }
 
+static int find_json_object_value(const char *json, const char *name,
+                                  const char **value_start) {
+  const char *p = json;
+  int object_depth = 0;
+  int array_depth = 0;
+  int in_string = 0;
+  int escaped = 0;
+  int expect_key = 0;
+  const char *key_start = NULL;
+
+  if (!json || !name || !value_start) {
+    return 0;
+  }
+
+  for (; *p; p++) {
+    unsigned char c = (unsigned char)*p;
+
+    if (in_string) {
+      if (escaped) {
+        escaped = 0;
+      } else if (c == '\\') {
+        escaped = 1;
+      } else if (c == '"') {
+        in_string = 0;
+        if (key_start) {
+          size_t len = (size_t)(p - key_start);
+          int matches = strlen(name) == len && strncmp(key_start, name, len) == 0;
+          key_start = NULL;
+          expect_key = 0;
+
+          if (matches) {
+            const char *q = p + 1;
+            while (*q && isspace((unsigned char)*q)) {
+              q++;
+            }
+            if (*q != ':') {
+              return 0;
+            }
+            q++;
+            while (*q && isspace((unsigned char)*q)) {
+              q++;
+            }
+            *value_start = q;
+            return 1;
+          }
+        }
+      }
+      continue;
+    }
+
+    if (c == '"') {
+      in_string = 1;
+      if (object_depth == 1 && array_depth == 0 && expect_key) {
+        key_start = p + 1;
+      }
+    } else if (c == '{') {
+      object_depth++;
+      if (object_depth == 1) {
+        expect_key = 1;
+      }
+    } else if (c == '}') {
+      if (object_depth > 0) {
+        object_depth--;
+      }
+    } else if (c == '[') {
+      array_depth++;
+    } else if (c == ']') {
+      if (array_depth > 0) {
+        array_depth--;
+      }
+    } else if (c == ',' && object_depth == 1 && array_depth == 0) {
+      expect_key = 1;
+    }
+  }
+
+  return 0;
+}
+
+static int is_json_integer_value(const char *p) {
+  if (!p || *p == '\0') {
+    return 0;
+  }
+
+  if (*p == '-') {
+    p++;
+  }
+
+  if (*p == '0') {
+    p++;
+    if (isdigit((unsigned char)*p)) {
+      return 0;
+    }
+  } else {
+    if (!isdigit((unsigned char)*p)) {
+      return 0;
+    }
+    while (isdigit((unsigned char)*p)) {
+      p++;
+    }
+  }
+
+  while (*p && isspace((unsigned char)*p)) {
+    p++;
+  }
+
+  return *p == ',' || *p == '}';
+}
+
 static void check_schema_fields(const char *file, size_t source_line,
                                 const char *id, const char *word,
                                 const char *gloss, const char *pos,
@@ -440,6 +548,21 @@ static void check_schema_fields(const char *file, size_t source_line,
   for (i = 0; i < keys.len; i++) {
     if (!schema_has_field(schema, keys.items[i])) {
       snprintf(msg, sizeof(msg), "unknown field: %s", keys.items[i]);
+      report_msg(MSG_ERROR, file, source_line, id, word, gloss, pos, msg);
+    }
+  }
+
+  for (i = 0; i < schema->len; i++) {
+    const char *value;
+
+    if (schema->items[i].rule != SCHEMA_INTEGER) {
+      continue;
+    }
+
+    if (find_json_object_value(record_json, schema->items[i].name, &value) &&
+        !is_json_integer_value(value)) {
+      snprintf(msg, sizeof(msg), "field %s must be integer",
+               schema->items[i].name);
       report_msg(MSG_ERROR, file, source_line, id, word, gloss, pos, msg);
     }
   }
