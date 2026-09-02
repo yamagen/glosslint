@@ -1,4 +1,15 @@
 {
+  "schema": {
+    "word": "off",
+    "lemma": "off",
+    "kana": "off",
+    "lemma-kana": "off",
+    "romaji": "off",
+    "lemma-romaji": "off",
+    "gloss": "controlled",
+    "pos": "controlled",
+    "ku": "integer"
+  },
   "conjugation": {
     "ADV": "adverbial / ren'yokei",
     "ATTR": "attributive / rentaikei",
