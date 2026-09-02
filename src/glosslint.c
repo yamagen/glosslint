@@ -346,6 +346,13 @@ static int parse_json_string_pair(char *line, char **key, char **value) {
   return 1;
 }
 
+static int is_section_header(const char *line, const char *name) {
+  char pattern[128];
+
+  snprintf(pattern, sizeof(pattern), "\"%s\": {", name);
+  return strstr(line, pattern) != NULL;
+}
+
 static int load_control_file(const char *path, ControlSet *control) {
   FILE *fp;
   char *line = NULL;
@@ -366,22 +373,22 @@ static int load_control_file(const char *path, ControlSet *control) {
 
     (void)nread;
 
-    if (strstr(line, "\"conjugation\"")) {
+    if (is_section_header(line, "conjugation")) {
       section = SEC_CONJUGATION;
       continue;
     }
 
-    if (strstr(line, "\"pos\"")) {
+    if (is_section_header(line, "pos")) {
       section = SEC_POS;
       continue;
     }
 
-    if (strstr(line, "\"gloss\"")) {
+    if (is_section_header(line, "gloss")) {
       section = SEC_GLOSS;
       continue;
     }
 
-    if (strstr(line, "\"schema\"")) {
+    if (is_section_header(line, "schema")) {
       section = SEC_SCHEMA;
       continue;
     }
