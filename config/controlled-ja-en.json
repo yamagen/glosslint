@@ -1,0 +1,103 @@
+{
+  "schema": {
+    "word": "off",
+    "lemma": "off",
+    "kana": "off",
+    "lemma-kana": "off",
+    "romaji": "off",
+    "lemma-romaji": "off",
+    "gloss": "controlled",
+    "pos": "controlled",
+    "ku": "integer"
+  },
+  "conjugation": {
+    "ADV": "adverbial / ren'yokei",
+    "ATTR": "attributive / rentaikei",
+    "FIN": "finite / sentence-final",
+    "IRR": "irrealis / mizenkei",
+    "REALIS": "realis / izenkei"
+  },
+  "pos": {
+    "N": "noun",
+    "PN": "proper noun",
+    "PRON": "pronoun",
+    "V": "verb",
+    "ADJ": "adjective",
+    "ADJV": "adjectival verb",
+    "ADV": "adverb",
+    "ATD": "adnominal",
+    "DET": "determiner",
+    "CJ": "conjunction",
+    "INTJ": "interjection",
+    "AUX": "auxiliary",
+    "P": "particle",
+    "FIX": "fixed expression"
+  },
+  "gloss": {
+    "ABL": "ablative",
+    "ACC": "accusative",
+    "ALL": "allative",
+    "CAUS": "causative",
+    "COM": "comitative",
+    "COND": "conditional",
+    "COP": "copula",
+    "DAT": "dative",
+    "DECL": "declarative",
+    "FOC": "focus",
+    "FUT": "future",
+    "GEN": "genitive",
+    "HON": "honorific",
+    "INFER": "inferential",
+    "LOC": "locative",
+    "MOD": "modal",
+    "NEG": "negation / negative",
+    "NMLZ": "nominalizer / nominalization",
+    "NOM": "nominative",
+    "PASS": "passive",
+    "PERF": "perfect",
+    "PEFV": "perfective",
+    "PFV": "perfective",
+    "PL": "plural",
+    "POT": "potential",
+    "PROH": "prohibitive",
+    "PST": "past",
+    "PURP": "purposive",
+    "Q": "question particle / marker",
+    "QUOT": "quotative",
+    "REASON": "reason / causal",
+    "TOP": "topic",
+    "VOL": "volitional",
+    "WISH": "wish",
+    "CNTF": "counterfactual"
+  },
+  "emit": {
+    "latex": {
+      "begin": ["\\ex", "\\begingl"],
+      "lines": [
+        { "tag": "word", "command": "\\gla" },
+        { "tag": "romaji", "command": "\\glb" },
+        { "tag": "gloss", "command": "\\glc", "split": "." }
+      ],
+      "translation": {
+        "tags": ["translation-en-natural", "translation-en", "translation-en-literal"],
+        "command": "\\glft"
+      },
+      "end": ["\\endgl", "\\xe"]
+    },
+    "html": {
+      "container": { "element": "div", "class": "gloss" },
+      "tokens": { "element": "div", "class": "gloss-tokens" },
+      "token": { "element": "div", "class": "gloss-token" },
+      "lines": [
+        { "tag": "word", "element": "div", "class": "gla" },
+        { "tag": "romaji", "element": "div", "class": "glb" },
+        { "tag": "gloss", "element": "div", "class": "glc", "split": "." }
+      ],
+      "translation": {
+        "tags": ["translation-en-natural", "translation-en", "translation-en-literal"],
+        "element": "div",
+        "class": "glft"
+      }
+    }
+  }
+}
