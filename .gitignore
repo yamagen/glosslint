@@ -1,6 +1,23 @@
+src/glosslint
+src/glossemit
+src/*.o
+
 tmp/
 rbin
 *.o
 *~
 *.swp
 *.swo
+
+# LaTeX generated files
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# Generated example output
+examples/latex/emit-out.tex
+examples/latex/glosstest.pdf
