@@ -63,17 +63,20 @@ static void report_msg(MessageLevel level, const char *file, size_t source_line,
           word ? word : "-", gloss ? gloss : "-", pos ? pos : "-");
 }
 
-static int is_lowercase_lexical(const char *s) {
+static int is_lexical(const char *s) {
   const unsigned char *p = (const unsigned char *)s;
-  int has_alpha = 0;
 
-  if (!s || *s == '\0') {
+  if (!s || *s == '\0' || !isalpha(*p)) {
     return 0;
   }
 
+  /* Ordinary lexical glosses may have one initial uppercase letter
+     (e.g. I, Kai-song), but all later alphabetic characters must be
+     lowercase. Hyphens are allowed. */
+  p++;
+
   for (; *p; p++) {
     if (isalpha(*p)) {
-      has_alpha = 1;
       if (!islower(*p)) {
         return 0;
       }
@@ -84,7 +87,42 @@ static int is_lowercase_lexical(const char *s) {
     }
   }
 
-  return has_alpha;
+  return 1;
+}
+
+static int is_proper_name_lexical(const char *s) {
+  const unsigned char *p = (const unsigned char *)s;
+  int segment_start = 1;
+
+  if (!s || *s == '\0') {
+    return 0;
+  }
+
+  /* For PN glosses, each hyphen-delimited segment may begin with either
+     uppercase or lowercase, while the rest of that segment must be
+     lowercase. This accepts Abe-no-Nakamaro but still rejects AB, NaKAmaro,
+     and empty segments such as Abe--Nakamaro. */
+  for (; *p; p++) {
+    if (*p == '-') {
+      if (segment_start) {
+        return 0;
+      }
+      segment_start = 1;
+      continue;
+    }
+
+    if (!isalpha(*p)) {
+      return 0;
+    }
+
+    if (segment_start) {
+      segment_start = 0;
+    } else if (!islower(*p)) {
+      return 0;
+    }
+  }
+
+  return !segment_start;
 }
 
 static void check_gloss_components(const char *file, size_t source_line,
@@ -105,7 +143,8 @@ static void check_gloss_components(const char *file, size_t source_line,
 
   for (part = strtok_r(copy, ".", &saveptr); part != NULL;
        part = strtok_r(NULL, ".", &saveptr)) {
-    if (is_lowercase_lexical(part)) {
+    if (is_lexical(part) ||
+        (strcmp(pos, "PN") == 0 && is_proper_name_lexical(part))) {
       lexical_count++;
       if (lexical_count > 1) {
         report_msg(MSG_WARN, file, source_line, id, word, gloss, pos,
@@ -435,7 +474,8 @@ static int find_json_object_value(const char *json, const char *name,
         in_string = 0;
         if (key_start) {
           size_t len = (size_t)(p - key_start);
-          int matches = strlen(name) == len && strncmp(key_start, name, len) == 0;
+          int matches =
+              strlen(name) == len && strncmp(key_start, name, len) == 0;
           key_start = NULL;
           expect_key = 0;
 
@@ -762,9 +802,10 @@ static void read_records(FILE *fp, RecordVec *records,
                                    &gloss, &pos, &record_json);
 
     if (split_result != 1) {
-      fprintf(stderr,
-              "fatal: input line %zu: malformed TSV line: expected 6 or 7 fields\n",
-              line_no);
+      fprintf(
+          stderr,
+          "fatal: input line %zu: malformed TSV line: expected 6 or 7 fields\n",
+          line_no);
       errors++;
       continue;
     }
@@ -818,66 +859,20 @@ static void read_records(FILE *fp, RecordVec *records,
   free(line);
 }
 
-static int gloss_seen_for_word(const RecordVec *records, const char *word,
-                               const char *gloss, size_t before_index) {
-  size_t i;
-
-  for (i = 0; i < before_index; i++) {
-    if (strcmp(records->items[i].word, word) == 0 &&
-        strcmp(records->items[i].gloss, gloss) == 0) {
-      return 1;
-    }
-  }
-
-  return 0;
-}
-
-static int word_has_different_gloss_before(const RecordVec *records,
-                                           const char *word, const char *gloss,
-                                           size_t before_index) {
-  size_t i;
-
-  for (i = 0; i < before_index; i++) {
-    if (strcmp(records->items[i].word, word) == 0 &&
-        strcmp(records->items[i].gloss, gloss) != 0) {
-      return 1;
-    }
-  }
-
-  return 0;
-}
-
-static void check_variation(const RecordVec *records) {
-  size_t i;
-
-  for (i = 0; i < records->len; i++) {
-    const Record *r = &records->items[i];
-
-    if (*r->word == '\0' || *r->gloss == '\0') {
-      continue;
-    }
-
-    if (!gloss_seen_for_word(records, r->word, r->gloss, i) &&
-        word_has_different_gloss_before(records, r->word, r->gloss, i)) {
-      report_msg(MSG_WARN, r->file, r->source_line, r->id, r->word, r->gloss,
-                 r->pos, "unstable gloss usage");
-    }
-  }
-}
-
 static void usage(FILE *out) {
-  fprintf(out,
-          "glosslint %s\n"
-          "usage: glosslint [options] < word-gloss.tsv\n\n"
-          "Input format:\n"
-          "  file<TAB>line<TAB>id<TAB>word<TAB>gloss<TAB>pos[<TAB>record-json]\n\n"
-          "Options:\n"
-          "  -c, --control-in FILE  controlled vocabulary JSON\n"
-          "      --unknown-error    treat unknown labels as errors\n"
-          "  -q, --quiet            print only summary\n"
-          "  -h, --help             show this help\n"
-          "  -v, --version          show version\n",
-          GLOSSLINT_VERSION);
+  fprintf(
+      out,
+      "glosslint %s\n"
+      "usage: glosslint [options] < word-gloss.tsv\n\n"
+      "Input format:\n"
+      "  file<TAB>line<TAB>id<TAB>word<TAB>gloss<TAB>pos[<TAB>record-json]\n\n"
+      "Options:\n"
+      "  -c, --control-in FILE  controlled vocabulary JSON\n"
+      "      --unknown-error    treat unknown labels as errors\n"
+      "  -q, --quiet            print only summary\n"
+      "  -h, --help             show this help\n"
+      "  -v, --version          show version\n",
+      GLOSSLINT_VERSION);
 }
 
 static void parse_options(int argc, char **argv, Options *opt) {
@@ -934,14 +929,12 @@ int main(int argc, char **argv) {
       return 2;
     }
 
-    fprintf(stderr,
-            "control: conjugation=%zu pos=%zu gloss=%zu schema=%zu\n",
+    fprintf(stderr, "control: conjugation=%zu pos=%zu gloss=%zu schema=%zu\n",
             control.conjugation.len, control.pos.len, control.gloss.len,
             control.schema.len);
   }
 
   read_records(stdin, &records, &control, &opt);
-  check_variation(&records);
 
   if (!opt.quiet) {
     fprintf(stderr, "SUMMARY\trecords=%zu\terrors=%zu\twarnings=%zu\n",

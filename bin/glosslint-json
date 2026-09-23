@@ -9,10 +9,14 @@ jq --stream -nr '
       { ids: {}, rec: {}, emit: null };
 
       .emit = null |
-      ($x[0]) as $p |
+($x[0]) as $rawp |
+(if $rawp[0] == "paragraph"
+ then $rawp[1:]
+ else $rawp
+ end) as $p |
 
-      if (($x|length) == 2
-          and ($p|length) == 2
+if (($x|length) == 2
+    and ($p|length) == 2
           and $p[1] == "id")
       then
         .ids[($p[0]|tostring)] = ($x[1]|tostring)

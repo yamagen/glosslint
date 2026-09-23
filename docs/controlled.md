@@ -94,6 +94,20 @@ For example:
 
 Lowercase lexical glosses can remain open-ended, while grammatical labels are explicitly controlled. This allows the specification to constrain analytical notation without requiring a closed lexicon.
 
+In the current convention, hyphens may occur inside an English lexical gloss to form a readable lexical unit (e.g. `take-off`), whereas periods separate a lexical gloss from added grammatical information (e.g. `take-off.ADV`). The two delimiters are therefore not treated as interchangeable formatting choices.
+
+A gloss item associated with a token is normally one of the following:
+
+A gloss item associated with a token is normally one of the following:
+
+- an English lexical gloss, such as `water` or `bloom`;
+- a controlled grammatical abbreviation, such as `PST`, `GEN`, or `MOD`;
+- a combination of a lexical gloss and one or more controlled grammatical abbreviations, such as `bloom.ADV`.
+
+Conjugation labels such as `ADV`, `FIN`, `IRR`, and `REALIS` are not normally used as stand-alone gloss items; they qualify a lexical gloss, as in `take-off.ADV`. By contrast, grammatical glosses such as `MOD`, `PST`, `NEG`, or `GEN` may stand alone when they adequately express the function relevant to the example.
+
+The gloss tier is therefore intended primarily as a layer of lexical and grammatical annotation associated with tokens. It is not intended to encode every possible morphological boundary convention inside the gloss string itself. Projects that use other boundary systems or annotation traditions can declare their own operational specifications rather than forcing those conventions into a single universal delimiter scheme.
+
 ## Emission rules
 
 The `emit` object describes publication defaults.
