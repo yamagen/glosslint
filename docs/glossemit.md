@@ -11,7 +11,13 @@ It reads one JSON object per line from standard input and writes formatted outpu
 Each input line is a JSON object containing a `word-gloss` array. Translation fields may also be present.
 
 ```json
-{"word-gloss":[{"word":"得","romaji":"e","gloss":"receive.ADV"},{"word":"て","romaji":"te","gloss":"CONJ"}],"translation-en-natural":"It was a matter after receiving."}
+{
+  "word-gloss": [
+    { "word": "得", "romaji": "e", "gloss": "receive.ADV" },
+    { "word": "て", "romaji": "te", "gloss": "CONJ" }
+  ],
+  "translation-en-natural": "It was a matter after receiving."
+}
 ```
 
 A corpus can therefore keep any outer JSON organization it needs:
@@ -82,6 +88,39 @@ For example:
 HTML text and class values are escaped by `glossemit`. Elements and class names are selected in the controlled configuration; CSS remains the user's responsibility.
 
 See [`examples/html/glosstest.html`](../examples/html/glosstest.html) for a complete HTML5 example with CSS.
+
+### Translation
+
+A single translation can be selected by fallback priority:
+
+```json
+"translation": {
+  "tags": [
+    "translation-en-natural",
+    "translation-en",
+    "translation-en-literal"
+  ],
+  "command": "\\glft"
+}
+```
+
+The first non-empty field in `tags` is emitted.
+
+Multiple translations can instead be emitted with `mult-translation`:
+
+```json
+"mult-translation": {
+  "command": "\\glft",
+  "separator": "\\\\",
+  "items": [
+    { "tag": "translation-en-literal", "label": "L" },
+    { "tag": "translation-en-natural", "label": "N" },
+    { "tag": "translation-en-reading", "label": "R" }
+  ]
+}
+```
+
+All available items are emitted in the configured order. Labels are passed to the LaTeX output as `\trline{LABEL}{TEXT}`. The definition and visual styling of `\trline` belong to the surrounding LaTeX document, not to `glossemit`.
 
 ## Configuration
 
